@@ -14,7 +14,7 @@ class ObsEncoder(nn.Module):
         self.shape = input_shape
         activation = info['activation']
         d = info['depth']
-        k  = info['kernel']
+        k = info['kernel']
         self.k = k
         self.d = d
         self.convolutions = nn.Sequential(
@@ -45,6 +45,7 @@ class ObsEncoder(nn.Module):
         conv3_shape = conv_out_shape(conv2_shape, 0, self.k, 1)
         embed_size = int(4*self.d*np.prod(conv3_shape).item())
         return embed_size
+
 
 class ObsDecoder(nn.Module):
     def __init__(self, output_shape, embed_size, info):
@@ -85,15 +86,19 @@ class ObsDecoder(nn.Module):
         mean = torch.reshape(x, (*batch_shape, *self.output_shape))
         obs_dist = td.Independent(td.Normal(mean, 1), len(self.output_shape))
         return obs_dist
-    
+
+
 def conv_out(h_in, padding, kernel_size, stride):
     return int((h_in + 2. * padding - (kernel_size - 1.) - 1.) / stride + 1.)
+
 
 def output_padding(h_in, conv_out, padding, kernel_size, stride):
     return h_in - (conv_out - 1) * stride + 2 * padding - (kernel_size - 1) - 1
 
+
 def conv_out_shape(h_in, padding, kernel_size, stride):
     return tuple(conv_out(x, padding, kernel_size, stride) for x in h_in)
+
 
 def output_padding_shape(h_in, conv_out, padding, kernel_size, stride):
     return tuple(output_padding(h_in[i], conv_out[i], padding, kernel_size, stride) for i in range(len(h_in)))
